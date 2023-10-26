@@ -6,7 +6,6 @@ app = Flask(__name__)
 def send_recording(path):
     return send_from_directory('recordings', path)
 
-
 @app.route('/', methods=["GET", "POST"])
 def show_main():
     return render_template('hello.html')
