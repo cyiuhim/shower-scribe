@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="title">{% block title %} Text {{text.id}} {% endblock %}</h1>
+    <div class="content">
+        <div class="text">
+            <p><b>#{{ text.id }} (type {{ text.type}})</b></p>
+            <p>{{ text.text_filename }}</p>
+            <p>Created at: {{ text.created_at }}</p>
+            <p>Text:</p>
+            <p>{{ content }}</p>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="title">{% block title %} Recording {{recording.id}} {% endblock %}</h1>
+    <div class="content">
+        <div class="text">
+            <p><b>#{{ recording.id }}</b></p>
+            <p>{{ recording.recording_filename }}</p>
+            <p>Created at: {{ recording.created_at }}</p>
+            <audio controls>
+                <source src="{{ url_for('send_recording', path=recording.recording_filename)}}" type="audio/wav">
+            </audio>
+        </div>
+    </div>
+{% endblock %}
