@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %} - ShowerScribe</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('show_main') }}">Home</a>
+        <a href="{{ url_for('show_recordings') }}">Recordings</a>
+        <a href="{{ url_for('show_texts') }}">Texts</a>
+    </nav>
+    <hr>
+    <div class="content">
+        {% block content %} {% endblock %}
+    </div>
+</body>
+</html>
