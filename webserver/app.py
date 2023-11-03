@@ -82,6 +82,9 @@ def show_text(text_id):
 
 # Run the app
 
+def startup_webserver():
+    app.run(host='0.0.0.0', debug=False,port=8000)
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True,port=8000)
+    startup_webserver()
     
