@@ -50,7 +50,7 @@ def send_recording(path):
 
 @app.route('/', methods=["GET", "POST"])
 def show_main():
-    return render_template('index.html')
+    return render_template('index.html', title='ShowerScribe')
 
 @app.route('/texts', methods=["GET", "POST"])
 def show_texts():

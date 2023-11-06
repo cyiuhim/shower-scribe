@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="title">{% block title %} Welcome {% endblock %}</h1>
-    <div class="content">
-        <p>ShowerScribe is a web application that allows you to record your shower thoughts and transcribe them into text.</p>
-        <p>It is built using Python, Flask.</p>
-        <p>Click on the links above to view your recordings and texts.</p>
-    </div>
+
+        <h1 class="display-4">{{ title }}</h1> 
+        
+        <!-- Bootstrap 'alert' component for important information -->
+        <div class="custom-box">
+            <p>ShowerScribe is a web application that allows you to record your shower thoughts and transcribe them into text.</p>
+            <p>It is built using Python and Flask.</p>
+            <p>Click on the links above to view your recordings and texts.</p>
+        </div>
+        
+        <h1 class="header-custom-color">Sessions</h1>
 {% endblock %}

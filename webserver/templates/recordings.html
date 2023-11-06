@@ -1,17 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="title">{% block title %} Recordings {% endblock %}</h1>
-    <div class="content">
+    <div class="custom-margin">
+        <h1 class="display-4">Recordings</h1>
         {% for recording in recordings %}
-            <div class="recording">
-                <p><a href="{{ url_for('show_recording', recording_id=recording.id)}}"><b>#{{ recording.id }}</b></a></p>
-                <p>{{ recording.recording_filename }}</p>
-                <p>Created at: {{ recording.created_at }}</p>
-                <audio controls>
-                    <source src="{{ url_for('send_recording', path=recording.recording_filename)}}" type="audio/wav">
-                </audio>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        {{ recording.created_at.strftime('%b. %d, %Y') }}
+                    </h3>
+                    <h5 class="card-body">
+                        <p class="card-text">
+                            Created at: {{ recording.created_at.strftime('%H:%M:%S') }}
+                        </p>
+
+                        <a href="{{ url_for('show_recording', recording_id=recording.id) }}" class="text-decoration-none">
+                            Recording #{{ recording.id }} - {{ recording.recording_filename }}
+                        </a>
+
+                    </h5>
+                    <!--<audio controls>
+                        <source src="{{ url_for('send_recording', path=recording.recording_filename) }}" type="audio/wav">
+                        Your browser does not support the audio element.
+                    </audio> -->
+                </div>
             </div>
+        {% else %}
+            <p>No recordings found.</p>
         {% endfor %}
     </div>
 {% endblock %}
