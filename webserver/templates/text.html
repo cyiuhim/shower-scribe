@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="title">{% block title %} Text {{text.id}} {% endblock %}</h1>
+    <div class="content">
+        <div class="text">
+            <p><b>{{text.display_name}} (#{{ text.id }} type {{ text.type}})</b></p>
+            <p>{{ text.text_filename }}</p>
+            <p>Created at: {{ text.created_at }}</p>
+            <p>Associated to recording: <a href="{{url_for('show_recording', recording_id=text.associated_recording_id)}}">#{{ text.associated_recording_id }}</a></p>
+            <p>Text:</p>
+            <p>{{ content }}</p>
+        </div>
+    </div>
+{% endblock %}
