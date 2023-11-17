@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="title">{% block title %} Texts {% endblock %}</h1>
+    <div class="content">
+        {% for text in texts %}
+            <div class="text">
+                <p><a href="{{ url_for('show_text', text_id=text.id)}}"><b>{{text.display_name}} (#{{ text.id }} type {{ text.type}})</b></a></p>
+                <p>{{ text.text_filename }}</p>
+                <p>Created at: {{ text.created_at }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
