@@ -1,28 +1,25 @@
 from recorder import Recorder
-from time import sleep
+from button_handler import ButtonHandler
 
 
 def main():
     # initializes recorder
     recorder = Recorder(stereo=False)
+    button_handler = ButtonHandler(0)
 
-    recorder.start_recording()
-    sleep(2)  # when implementing this would be something like .on_button_press()
-    recorder.save_recording("webserver/userdata/recordings","test.wav")  # will save to ./recordings/test.wav
-    print("complete 1")
+    try:
+        while True:
+            # starts recording when button is pressed
+            if button_handler.is_pressed and not recorder.is_recording:
+                recorder.start_recording()
 
-    # to demonstrate ability to do multiple recordings before resetting
-    recorder.start_recording()
-    sleep(3)
-    recorder.save_recording("webserver/userdata/recordings", "test2.wav")
-    print("complete 2")
+            # stops recording when button is released
+            if not button_handler.is_pressed and recorder.is_recording:
+                recorder.save_recording("workers", "test.wav")
 
-    # to demonstrate what happens when you try to save without recording
-    res = recorder.save_recording("webserver/userdata/recordings", "test3")
-    print(f"fail 1: {res}")
-
-    # closes the recorder
-    recorder.terminate_interface()
+    except KeyboardInterrupt:
+        recorder.terminate_interface()
+        button_handler.cleanup()
 
 
 if __name__ == "__main__":
