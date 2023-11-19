@@ -1,5 +1,8 @@
 import shutil
 from app import app, db, Recording, TextFile
+import random
+
+random.seed(0)
 
 with app.app_context():
     # Delete all existing recordings and text files entries
@@ -10,6 +13,7 @@ with app.app_context():
     for i in range(5):
         r = Recording()
         r.recording_filename = f"test_recording_{i}.wav"
+        r.display_name = f"Test Recording {i}"
         db.session.add(r)
         # make copies of the example-recording.wav file to match the filename
         try:
@@ -22,6 +26,8 @@ with app.app_context():
     for i in range(5):
         t = TextFile()
         t.text_filename = f"test_text_{i}.txt"
+        t.display_name = f"Test Text {i}"
+        t.associated_recording_id =  random.randint(1,5) # associate with the recording with the same id
         t.type = 0 # transcription
         db.session.add(t)
         # make copies of the example-transcription.txt file to match the filename

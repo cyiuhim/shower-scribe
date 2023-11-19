@@ -175,3 +175,4 @@ webserver/userdata/**/*.txt
 # Ignore the database
 *.db
 .vscode/settings.json
+webserver/userdata/user_settings.json

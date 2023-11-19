@@ -1,4 +1,5 @@
 import os
+import json
 
 from flask import Flask, render_template, send_from_directory, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -6,11 +7,27 @@ from sqlalchemy.sql import func
 
 app = Flask(__name__)
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Settings setup
+user_settings_path = os.path.join(basedir, 'userdata/user_settings.json')
+user_settings = {}
+if os.path.exists(user_settings_path):
+    with open(user_settings_path, 'r') as f:
+        user_settings = json.load(f)
+else:
+    print(f"No settings file found {user_settings_path}. Using default settings.")
+
+    user_settings = {
+        "clustering_time_minutes" : 180
+    }
+
+    with open(user_settings_path, 'w') as f:
+        json.dump(user_settings, f)
 
 
 # Database setup
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(basedir, 'userdata/database.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -26,6 +43,9 @@ class Recording(db.Model):
     created_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now())
     recording_filename = db.Column(db.Text)
+    display_name = db.Column(db.Text)
+    associated_transcription_id = db.Column(db.Integer, db.ForeignKey('text_file.id'))
+    associated_resume_id = db.Column(db.Integer, db.ForeignKey('text_file.id'))
 
     def __repr__(self):
         return f'<Recording {self.id} ({self.recording_filename})>'
@@ -34,8 +54,10 @@ class TextFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now())
-    type = db.Column(db.Integer) # 0 = transcription, 1 = brainstorm
+    type = db.Column(db.Integer) # 0 = transcription, 1 = resume, 2 = brainstorm
     text_filename = db.Column(db.Text)
+    display_name = db.Column(db.Text)
+    associated_recording_id = db.Column(db.Integer, db.ForeignKey('recording.id'))
 
     def __repr__(self):
         return f'<TextFile {self.id} ({self.text_filename} type {self.type})>'
