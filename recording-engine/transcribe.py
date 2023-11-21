@@ -4,8 +4,8 @@ import os
 import os.path
 from pathlib import Path
 
-rate = 48000
-duration = 5
+# rate = 48000
+# duration = 5 # the conductor will set the duration by button control
 
 recordpath = "../webserver/userdata/recordings/example-prof2.wav" # use relative paths, not absolute paths, and use them through the os module. because this will only work on your machine. it would be something like "../webserver/userdata/recordings/test.wav"
 
