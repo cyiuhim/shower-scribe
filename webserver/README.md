@@ -18,7 +18,4 @@ The virtual environment can be deactivated using the following:
 
 ## Database Setup (that will need to be automated on the PI setup)
 
-- export FLASK_APP=app
-- flask shell
-- from app import *
-- db.create_all()
+Run reset_database.py

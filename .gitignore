@@ -176,3 +176,4 @@ webserver/userdata/**/*.txt
 *.db
 .vscode/settings.json
 webserver/userdata/user_settings.json
+llm_services/chroma_db/*
