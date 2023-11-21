@@ -1,3 +1,4 @@
+#This populate is before resumes implemented. More variety for testing though.
 import shutil
 from app import app, db, Recording, TextFile
 import random
@@ -25,6 +26,7 @@ with app.app_context():
             r.recording_filename = f"test_recording_{day}_{i}.wav"
             r.display_name = f"Test Recording {day} #{i}"
             r.associated_transcription_id = random.randint(1, 10)
+            r.associated_resume_id = random.randint(1, 10)
             r.created_at = current_date.replace(hour=random_time().hour, minute=random_time().minute, second=random_time().second)
             db.session.add(r)
             # Copy the example recording file

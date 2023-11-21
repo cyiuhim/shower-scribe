@@ -7,31 +7,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">    
     <link rel="stylesheet" href="{{ url_for('static', filename='icons') }}">    
 
+<body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="height: 70px;">
-        <a style="font-size: 24px; display: flex; align-items: center;">
-            <object data="static/icons/shower.svg" width="25" height="25"> </object>
-            <object data="static/icons/book.svg" width="25" height="25"> </object>
-            <object data="static/icons/feather-pointed.svg" width="25" height="25"> </object>
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('show_main') }}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('show_search') }}">Search</a>
-                </li>
-                <li>
-                    <a class="nav-link" href="{{ url_for('show_settings') }}">Settings</a>
-                </li>
-            </ul>
+        <div class="container-sm">
+            <a style="font-size: 24px; display: flex; align-items: center;">
+                <object data="{{ url_for('static', filename='icons/shower.svg') }}" width="25" height="25"></object>
+                <object data="{{ url_for('static', filename='icons/book.svg') }}" width="25" height="25"></object>
+                <object data="{{ url_for('static', filename='icons/feather-pointed.svg') }}" width="25" height="25"></object>
+            </a>
+            
+            
+            <div class="container">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('show_main') }}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('show_search') }}">Search</a>
+                        </li>
+                        <li>
+                            <a class="nav-link" href="{{ url_for('show_settings') }}">Settings</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </nav>
+        
 
+    </div>
 
 
     <div class="custom-margin">
@@ -43,6 +51,7 @@
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/jquery-3.5.1.min.js"></script>
 
+    
 
 </body>
 </html>

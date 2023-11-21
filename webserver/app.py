@@ -101,25 +101,23 @@ def recordings_on_date(date):
 def send_recording(path):
     return send_from_directory('userdata/recordings', path)
 
-@app.route('/texts', methods=["GET", "POST"])
-def show_texts():
-    texts = TextFile.query.all()
-    return render_template('texts.html', texts=texts)
-
-@app.route('/recordings', methods=["GET", "POST"])
-def show_recordings():
-    recordings = Recording.query.all()
-    return render_template('recordings.html', recordings=recordings)
-
 @app.route('/recordings/<int:recording_id>', methods=["GET", "POST"])
 def show_recording(recording_id):
     recording = Recording.query.get_or_404(recording_id)
-    transcript_id = recording.associated_transcription_id
+    resume_text = "No transcript available"
 
-    # Debugging: Print the transcript_id to console
-    print("Transcript ID:", transcript_id)
+    # Fetch the associated transcript TextFile entry
+    associated_resume = TextFile.query.get(recording.associated_resume_id)
+    if associated_resume:
+        # Assuming the text content is stored in a file
+        try:
+            with open(f"userdata/texts/{associated_resume.text_filename}", "r") as f:
+                resume_text = f.read()
+        except IOError:
+            resume_text = "Error reading transcript file."
 
-    return render_template('recording.html', recording=recording)
+    return render_template('recording.html', recording=recording, resume_text=resume_text)
+
 
 @app.route('/texts/<int:text_id>', methods=["GET", "POST"])
 def show_text(text_id):
@@ -130,7 +128,7 @@ def show_text(text_id):
             content = f.read()
     except:
         content = "Error reading text file."
-    return render_template('text.html', text=text, content=content) # we pass the text without any escaping, since it's been sanitized at ingest
+    return render_template('text.html', text=text, content=content) # we pass the text without any escaping
  
 @app.route('/delete_recording/<int:recording_id>', methods=['POST']) #in progress. go through and kill all the children
 def delete_recording(recording_id):
@@ -189,9 +187,10 @@ def group_recordings(recordings):
     recordings.sort(key=lambda r: r.created_at)
     grouped_sessions = []
     session = []
+    clustering_minutes = user_settings["clustering_time_minutes"]  # Directly use the setting
 
     for recording in recordings:
-        if not session or recording.created_at - session[0].created_at <= timedelta(minutes=180):
+        if not session or recording.created_at - session[0].created_at <= timedelta(minutes=clustering_minutes):
             session.append(recording)
         else:
             grouped_sessions.append(session)
@@ -203,12 +202,12 @@ def group_recordings(recordings):
     # Assign session titles
     for session in grouped_sessions:
         first_recording_time = session[0].created_at
-        if first_recording_time.hour < 11 or (first_recording_time.hour == 11 and first_recording_time.minute <= 30):
+        if first_recording_time.hour < 11 or (first_recording_time.hour == 11 and first_recording_time.minute <= 30): # Morning session if before 11:30
             session_title = "Morning Session"
-        elif first_recording_time.hour < 17 or (first_recording_time.hour == 17 and first_recording_time.minute <= 30):
+        elif first_recording_time.hour < 17 or (first_recording_time.hour == 17 and first_recording_time.minute <= 30): # Afternoon session if before 17:30 (5:30pm)
             session_title = "Afternoon Session"
         else:
-            session_title = "Evening Session"
+            session_title = "Evening Session" # Otherwise it's an evening session
 
         for recording in session:
             recording.session_title = session_title

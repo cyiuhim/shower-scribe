@@ -1,26 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h1 class="display-4" style="color: #343f71;">Text Details</h1>
-    <a href="{{ url_for('show_recording', recording_id=text.associated_recording_id) }}" class="btn btn-secondary">Back to Recording #{{ text.id }}</a>
-</div>
-<p class="text-muted">Exploring Transcript #{{ text.id }}</p>
+<div class="container-sm">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="display-4" style="color: #343f71;">Text Details</h1>
+        <a href="{{ url_for('show_recording', recording_id=text.associated_recording_id) }}" class="btn btn-secondary">Back to Recording #{{ text.id }}</a>
+    </div>
+    <p class="text-muted">Exploring Transcript #{{ text.id }}</p>
 
-<div class="card mb-4" style="border-color: #e9d8e4;">
-    <div class="card-body" style="background-color: white;">
-        <h3 class="card-title" style="color: #343f71;">
-            Transcript #{{ text.id }}
-        </h3>
-        <p class="card-text" style="color: #343f71;">
-            Created at: {{ text.created_at.strftime('%I:%M %p').lstrip('0') }}            
-        </p>
-        <p class="card-text" style="color: #343f71;"><strong>Text Content:</strong></p>
-        <div class="card-text">
-            <!-- Adjusting the pre tag to show the text in a large, non-scrolling box -->
-                <pre style="color: #343f71; padding: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; max-height: none;">{{ content }}</pre>
+    <div class="card mb-4" style="border-color: #e9d8e4;">
+        <div class="card-body" style="background-color: white;">
+            <h3 class="card-title" style="color: #343f71;">
+                Transcript #{{ text.id }}
+            </h3>
+            <p class="card-text" style="color: #343f71;">
+                Created at: {{ text.created_at.strftime('%I:%M %p').lstrip('0') }}            
+            </p>
+            <p class="card-text" style="color: #343f71;"><strong>Text Content:</strong></p>
+            <div class="card-text">
+                <!-- Adjusting the pre tag to show the text in a large, non-scrolling box -->
+                    <pre style="color: #343f71; padding: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; max-height: none;">{{ content }}</pre>
             </div>
         </div>
-            </div>
-
+    </div>
+</div>
 {% endblock %}

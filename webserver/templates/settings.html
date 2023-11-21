@@ -2,29 +2,31 @@
 
 {% block content %}
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 class="display-4" style="color: #343f71;">Settings</h1>
-        <a href="{{ url_for('show_main') }}" class="btn btn-secondary">Back to Main Page</a>
-    </div>
+    <div class="container-sm">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="display-4" style="color: #343f71;">Settings</h1>
+            <a href="{{ url_for('show_main') }}" class="btn btn-secondary">Back to Main Page</a>
+        </div>
 
-    <div class="card my-4" style="border-color: #e9d8e4;">
-        <div class="card-body" style="background-color: white;">
-            <h2 class="card-title" style="color: #343f71;">Privacy</h2>
-            <!-- Privacy settings content -->
+        <div class="card my-4" style="border-color: #e9d8e4;">
+            <div class="card-body" style="background-color: white;">
+                <h2 class="card-title" style="color: #343f71;">Privacy</h2>
+                <!-- Privacy settings content -->
+            </div>
+        </div>
+
+        <div class="card my-4" style="border-color: #e9d8e4;">
+            <div class="card-body" style="background-color: white;">
+                <h2 class="card-title" style="color: #343f71;">Display</h2>
+            </div>
+        </div>
+
+        <div class="card my-4" style="border-color: #e9d8e4;">
+            <div class="card-body" style="background-color: white;">
+                <h2 class="card-title" style="color: #343f71;">Storage</h2>
+                <!-- Storage settings content -->
+            </div>
         </div>
     </div>
-
-    <div class="card my-4" style="border-color: #e9d8e4;">
-        <div class="card-body" style="background-color: white;">
-            <h2 class="card-title" style="color: #343f71;">Display</h2>
-        </div>
-    </div>
-
-    <div class="card my-4" style="border-color: #e9d8e4;">
-        <div class="card-body" style="background-color: white;">
-            <h2 class="card-title" style="color: #343f71;">Storage</h2>
-            <!-- Storage settings content -->
-        </div>
-    </div>
-
+    
 {% endblock %}

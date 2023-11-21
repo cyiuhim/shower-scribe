@@ -8,5 +8,4 @@ SE 101 Project - An IOT audio recorder built for recording your amazing shower t
 - To connect to the virtual environment, run `source env/bin/activate`, or in VSCode, click on the Python interpreter in the bottom left corner and select the virtual environment
 - To freeze requirements.txt, run `pip freeze > requirements.txt`
 - To install the requirements, run `pip install -r requirements.txt`
-- To run the server, run `python3 app.py` when in the virtual environment and webserver directory
-- In order for recordings to be able to be merged, run `pip install pydub`
+- To run the server, run `python3 app.py` when in the virtual environment and webserver directorys
