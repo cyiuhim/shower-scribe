@@ -20,7 +20,7 @@
         {% for date, recordings in grouped_recordings.items() %}
         <a href="{{ url_for('recordings_on_date', date=date) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
             <span>{{ date }}</span>
-            <i class="bi bi-arrow-right-circle-fill" style="color: #343f71;"></i>
+            <object data="static/icons/circle-right.svg" width="25" height="25" style="color: #343f71;"></object>
         </a>
         {% else %}
             <p class="text-muted">No recordings found.</p>
