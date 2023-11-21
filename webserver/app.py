@@ -132,7 +132,7 @@ def show_text(text_id):
         content = "Error reading text file."
     return render_template('text.html', text=text, content=content) # we pass the text without any escaping, since it's been sanitized at ingest
  
-@app.route('/delete_recording/<int:recording_id>', methods=['POST'])
+@app.route('/delete_recording/<int:recording_id>', methods=['POST']) #in progress. go through and kill all the children
 def delete_recording(recording_id):
     recording = Recording.query.get(recording_id)
     if recording:
