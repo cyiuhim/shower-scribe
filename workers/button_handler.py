@@ -25,9 +25,7 @@ class ButtonHandler:
         # Add event detection for button press and release
         GPIO.add_event_detect(self.button_pin, GPIO.FALLING,
                               callback=self.on_button_press, bouncetime=300)
-        GPIO.add_event_detect(self.button_pin, GPIO.RISING,
-                              callback=self.on_button_release, bouncetime=300)
-
+        
     def on_button_press(self, channel):
         """
             @brief Updates the button's state when pressed
@@ -36,17 +34,7 @@ class ButtonHandler:
             Channel is to handle multiple pins
         """
         print("Button pressed")
-        self.is_pressed = True  # update button state
-
-    def on_button_release(self, channel):
-        """
-            @brief Updates the button's state when released
-
-            @param channel
-            Channel is to handle multiple pins
-        """
-        print("Button released")
-        self.is_pressed = False  # update button state
+        self.is_pressed = not self.is_pressed  # update button state
 
     def terminate_interface(self):
         """
