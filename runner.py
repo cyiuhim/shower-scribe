@@ -25,26 +25,25 @@ class Conductor():
         
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
+        self.recorder = Recorder(stereo=False)
 
 
     def listen_for_input(self):
-        recorder = Recorder(stereo=False)
-        while True:
-            with keyboard.Events() as events:
-                for event in events:
-                    if event.key == keyboard.Key.space and not recorder.is_recording:
-                        recorder.start_recording()
-                    if event.key == keyboard.Key.shift_l and recorder.is_recording:
-                        filename = datetime.now().strftime("recording-%Y-%m-%d-%H-%M.wav")
-                        status = recorder.save_recording(self.recordings_directory, filename)
-                        print(f"Recorder saved with status {status}.")
-                        if status == 0:
-                            print("attempting transcription.")
-                            self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                                         args=(os.path.join(self.recordings_directory, filename),),
-                                                         callback=self.transcription_callback,
-                                                         error_callback=self.transcription_error_callback
-                                                         )
+        with keyboard.Events() as events:
+            for event in events:
+                if event.key == keyboard.Key.space and not self.recorder.is_recording:
+                    self.recorder.start_recording()
+                if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
+                    filename = datetime.now().strftime("recording-%Y-%m-%d-%H-%M.wav")
+                    status = self.recorder.save_recording(self.recordings_directory, filename)
+                    print(f"Recorder saved with status {status}.")
+                    if status == 0:
+                        print("attempting transcription.")
+                        self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                                     args=(os.path.join(self.recordings_directory, filename),),
+                                                     callback=self.transcription_callback,
+                                                     error_callback=self.transcription_error_callback
+                                                     )
     @staticmethod
     def create_transcription_worker(audio_file: str) -> str | None:
         with open("debug.txt", "w") as f:
@@ -61,14 +60,11 @@ class Conductor():
         print(data)
 
     def transcription_error_callback(self, data):
-        with open("debug.txt", "w") as f:
-            f.write("BONGOBONGBOBGO")
-            f.write(f"Test garbage: Unsuccessful execution of transcription function: {data}.")
         print(f"Test garbage: Unsuccessful execution of transcription function: {data}.")
 
     def clean(self):
+        self.recorder.terminate_interface()
         self.flask_server.join()
-
 
 
 if __name__ == "__main__":
@@ -77,6 +73,7 @@ if __name__ == "__main__":
         try:
             conductor.listen_for_input()
         except KeyboardInterrupt:
+            print("Exiting")
             conductor.clean()
             exit()
 
