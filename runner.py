@@ -1,5 +1,6 @@
 import assemblyai
 import multiprocessing as mp
+import os
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
@@ -9,8 +10,6 @@ from workers.recorder import Recorder
 from webserver.app import startup_webserver
 
 from datetime import datetime
-import sys
-import os
 
 
 class Conductor():
@@ -29,6 +28,10 @@ class Conductor():
 
 
     def listen_for_input(self):
+        """
+        Listen for keyboard input and orchestrate recording/transcription workers.
+
+        """
         with keyboard.Events() as events:
             for event in events:
                 if event.key == keyboard.Key.space and not self.recorder.is_recording:
@@ -44,8 +47,12 @@ class Conductor():
                                                      callback=self.transcription_callback,
                                                      error_callback=self.transcription_error_callback
                                                      )
+
     @staticmethod
     def create_transcription_worker(audio_file: str) -> str | None:
+        """
+        Class method for creating transcriptions.
+        """
         transcriber = Transcriber()
         transcript = transcriber.transcribe(audio_file)
         filename = audio_file.replace(".wav",".txt").replace("recordings", "texts")
@@ -54,13 +61,22 @@ class Conductor():
                 f.write(transcript.text)
         return transcript.text
 
-    def transcription_callback(self, data):
+    def transcription_callback(self, data: str | None):
+        """
+        Transcription callback.
+        """
         print(data)
 
     def transcription_error_callback(self, data):
-        print(f"Test garbage: Unsuccessful execution of transcription function: {data}.")
+        """
+        Runs upon transcription failure.
+        """
+        print("Transcription failure")
 
     def clean(self):
+        """
+        Runs upon conductor cleanup.
+        """
         self.recorder.terminate_interface()
         self.flask_server.join()
 
