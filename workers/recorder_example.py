@@ -19,7 +19,7 @@ def main():
 
     except KeyboardInterrupt:
         recorder.terminate_interface()
-        button_handler.cleanup()
+        button_handler.terminate_interface()
 
 
 if __name__ == "__main__":
