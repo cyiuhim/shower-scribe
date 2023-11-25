@@ -28,10 +28,10 @@ def test():
         vector_interface.reset_database()
 
         cohere_interractions.full_resume_and_title(1)
-        cohere_interractions.full_resume_and_title(2)
-        cohere_interractions.full_resume_and_title(3)
-        cohere_interractions.full_resume_and_title(4)
-        cohere_interractions.full_resume_and_title(5)
+        # cohere_interractions.full_resume_and_title(2)
+        # cohere_interractions.full_resume_and_title(3)
+        # cohere_interractions.full_resume_and_title(4)
+        # cohere_interractions.full_resume_and_title(5)
 
 
 if __name__ == "__main__":
