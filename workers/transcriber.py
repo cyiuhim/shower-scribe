@@ -1,3 +1,0 @@
-"""
-Placeholder transcription worker.
-"""
