@@ -46,8 +46,6 @@ class Conductor():
                                                      )
     @staticmethod
     def create_transcription_worker(audio_file: str) -> str | None:
-        with open("debug.txt", "w") as f:
-            f.write("pissssss")
         transcriber = Transcriber()
         transcript = transcriber.transcribe(audio_file)
         filename = audio_file.replace(".wav",".txt").replace("recordings", "texts")
