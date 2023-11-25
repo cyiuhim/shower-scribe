@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="display-4 text-center" style="color: #343f71;">Shower Scribe</h1>
+    <h1 class="display-6 text-center" style="color: #343f71;">Search</h1>
+
+
+    <!-- Customized Alert Component -->
+    <div class="alert alert-secondary mt-3" style="border-left: 5px solid #343f71;">
+        <p>Search for recordings and texts within ShowerScribe.</p>
+        <p>Type your search query below.</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="mb-4">
+        <form action="{{ url_for('search_results') }}" method="get">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search..." name="query">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Go</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Placeholder for Search Results -->
+    <div id="searchResults">
+        <!-- Search results will be displayed here -->
+    </div>
+
+</div>
+
+{% endblock %}
