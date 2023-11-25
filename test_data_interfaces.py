@@ -29,3 +29,5 @@ if __name__ == "__main__":
     # print(vector_interface.get_n_closest_ids(0, "technology", 3))
     # vector_interface.peek_database()
     print(vector_interface.get_n_closest_ids(1, "place", 3))
+    print(sql_interface.add_recording("example-bee.wav"))
+    print(sql_interface.add_recording("example-bee.wav"))

@@ -5,6 +5,15 @@ from webserver.app import app, db, Recording, TextFile
 
 # Database methods
 
+def add_recording(recording_filename):
+    with app.app_context():
+        recording = Recording()
+        recording.recording_filename = recording_filename
+        recording.display_name = recording_filename
+        db.session.add(recording)
+        db.session.commit()
+        return recording.id
+
 def get_recording_path(recording_id):
     with app.app_context():
         recording = Recording.query.filter_by(id=recording_id).first()
