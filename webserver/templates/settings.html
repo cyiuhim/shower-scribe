@@ -12,17 +12,17 @@
         <form method="post" action="{{ url_for('save_settings') }}">
             <div class="form-group">
                 <label for="grouping_minutes">Number of Minutes for Grouping:</label>
-                <input type="number" class="form-control" id="grouping_minutes" name="grouping_minutes" required>
+                <input type="number" class="form-control" id="grouping_minutes" name="grouping_minutes" value="{{ user_settings.clustering_time_minutes }}" required>
             </div>
 
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="transcription_switch" name="transcription_switch">
-                <label class="form-check-label" for="transcription_switch">Enable Transcription (sends your reecordings for transcription to AssemblyAI)</label>
+                <input class="form-check-input" type="checkbox" id="transcription_switch" name="transcription_switch" {% if user_settings.transcription %}checked{% endif %}>
+                <label class="form-check-label" for="transcription_switch">Enable Transcription (sends audio recordings to AssemblyAI)</label>
             </div>
 
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="llm_switch_1" name="llm_switch_1">
-                <label class="form-check-label" for="llm_switch_1">Enable LLM Resume Service (sends some data to Cohere)</label>
+                <input class="form-check-input" type="checkbox" id="llm_switch" name="llm_switch" {% if user_settings.resume %}checked{% endif %}>
+                <label class="form-check-label" for="llm_switch">Enable LLM Service (sends transcriptions to Cohere)</label>
             </div>
 
             <button type="submit" class="btn btn-primary">Save Settings</button>

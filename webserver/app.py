@@ -168,16 +168,15 @@ def show_settings():
         except:
             print(f"Error saving settings file {user_settings_path}")
     
-
     return render_template('settings.html', user_settings=user_settings)
 
 @app.route('/settings', methods=['POST'])
 def save_settings():
     new_settings = request.form.to_dict()
-    # copy the settings from the form into the user_settings dict, instead of just replacing it
-    for key in user_settings:
-        if key in new_settings:
-            user_settings[key] = new_settings[key]
+    print(new_settings)
+    user_settings["clustering_time_minutes"] = int(new_settings.get("grouping_minutes",default_settings["clustering_time_minutes"]))
+    user_settings["transcription"] = new_settings.get("transcription_switch",'off') == 'on'
+    user_settings["resume"] = new_settings.get("llm_switch",'off') == 'on' # the switches only reutnr values if they're true for some reason
     
     basedir = os.path.abspath(os.path.dirname(__file__))
     user_settings_path = os.path.join(basedir, 'userdata','user_settings.json')
@@ -186,7 +185,7 @@ def save_settings():
             json.dump(user_settings, f)
     except:
         print(f"Error saving settings file {user_settings_path}")
-    return redirect(url_for('show_settings'))
+    return redirect(url_for('show_main'))
 
 @app.route('/search')
 def show_search():
