@@ -1,10 +1,12 @@
 import os
 from dotenv import load_dotenv
 import json
+import vector_interface
 
 from flask import Flask, render_template, send_from_directory, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
+from vector_interface import get_n_closest_ids
 # from filesystem_interface import get_text_content
 
 # App setup
@@ -117,6 +119,7 @@ def show_recording(recording_id):
     resume_text = "No resume available"
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
+    # print(associated_resume)
     if associated_resume:
         # Assuming the text content is stored in a file
         try:
@@ -134,7 +137,7 @@ def show_text(text_id):
     text = TextFile.query.get_or_404(text_id)
     # safely get the content of the text file
     try:
-        with open(os.path.join('userdata','texts',text.text_filename), "r") as f:
+        with open(os.path.join('webserver','userdata','texts',text.text_filename), "r") as f:
             content = f.read()
     except:
         content = "Error reading text file."
@@ -173,7 +176,7 @@ def show_settings():
 @app.route('/settings', methods=['POST'])
 def save_settings():
     new_settings = request.form.to_dict()
-    print(new_settings)
+
     user_settings["clustering_time_minutes"] = int(new_settings.get("grouping_minutes",default_settings["clustering_time_minutes"]))
     user_settings["transcription"] = new_settings.get("transcription_switch",'off') == 'on'
     user_settings["resume"] = new_settings.get("llm_switch",'off') == 'on' # the switches only reutnr values if they're true for some reason
@@ -193,18 +196,27 @@ def show_search():
     # You can pass additional context or settings if required.
     return render_template('search.html')
 
-@app.route('/search_results') #PLACEHOLDER UNTIL COMPLETED
+@app.route('/search_results')
 def search_results():
     query = request.args.get('query', '')  # Get the search query from URL parameters
 
-    # Perform the search logic here.
+    # Assuming get_n_closest_ids function returns a list of result IDs
+    result_ids = get_n_closest_ids(1, query, 3)
 
-    # For now, let's assume 'results' is a placeholder
-    results = []
+    # Fetch the results from the database
+    results = Recording.query.filter(Recording.id.in_(result_ids)).all()
 
-    # Render a template with the search results
+    # Render a template with the search results and the original query
     return render_template('search_results.html', query=query, results=results)
 
+@app.route('/everything')
+def show_everything():
+    # Fetch and group the recordings by date
+    all_recordings = Recording.query.order_by(Recording.created_at.desc()).all()
+    all_texts = TextFile.query.order_by(TextFile.created_at.desc()).all()
+
+    # No need to convert dates here, as they are already formatted as strings in get_grouped_recordings
+    return render_template('everything.html', all_recordings=all_recordings, all_texts=all_texts)
 
 #functions
 

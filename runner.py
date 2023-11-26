@@ -11,8 +11,8 @@ from pynput import keyboard
 from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
-from webserver.app import startup_webserver
 from sql_interface import *
+from webserver.app import startup_webserver, user_settings
 
 from datetime import datetime
 
