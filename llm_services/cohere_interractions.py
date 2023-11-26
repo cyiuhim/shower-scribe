@@ -131,6 +131,7 @@ def add_resume_to_embedding(content:str,text_id:int) -> None:
 
 def full_resume_and_title(recording_id:int) -> int|None:
     """Get the full resume and title for a recording id. Calling an external API so might be quite slow to run, may be blocking. Returns the new resume's text.id if successful, None if it fails in any way."""
+    print(f"Recording id: {recording_id}")
     # get the recording
     recording = sql_interface.get_recording_as_dict(recording_id)
     if recording is None:

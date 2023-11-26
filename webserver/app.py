@@ -119,11 +119,12 @@ def show_recording(recording_id):
     resume_text = "No resume available"
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
-    # print(associated_resume)
+    print(recording.associated_resume_id)
+    print(associated_resume)
     if associated_resume:
         # Assuming the text content is stored in a file
         try:
-            with open(f"userdata/texts/{associated_resume.text_filename}", "r") as f:
+            with open(f"webserver/userdata/texts/{associated_resume.text_filename}", "r") as f:
                 resume_text = f.read()
         except IOError:
             resume_text = "Error reading resume file. It might not be available yet."
