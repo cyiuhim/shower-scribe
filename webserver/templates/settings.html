@@ -11,7 +11,7 @@
         <!-- A form to update the settings --> 
         <form method="post" action="{{ url_for('save_settings') }}">
             
-            <div class="d-grid gap-2 mb-1">
+            <div class="d-grid gap-2 mb-2">
                 <div class="form-group">
                     <label for="grouping_minutes">Number of Minutes for Grouping:</label>
                     <input type="number" class="form-control" id="grouping_minutes" name="grouping_minutes" value="{{ user_settings.clustering_time_minutes }}" required>
@@ -28,7 +28,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="submit" class="btn" style="background-color: white; color: #343f71; border: 1px solid #343f71;">Save Settings</button>
         </form>
     </div>
     
