@@ -127,6 +127,7 @@ class Conductor():
             "type": 0,
             "associated_recording_id": recording_id
         }
+        print(text_creation_dict)
 
         print(create_text_from_dict(text_creation_dict))
         print(update_recording_flag_transcribed(recording_id))
