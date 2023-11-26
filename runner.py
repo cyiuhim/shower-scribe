@@ -103,7 +103,7 @@ class Conductor():
         Class method for creating transcriptions.
         """
         transcriber = Transcriber()
-        transcript = transcriber.transcribe(audio_file)
+        transcript = transcriber.transcribe(os.path.join(Conductor.recordings_directory, audio_file))
         filename = audio_file.replace(".wav", ".txt")
 
         if transcript.text:
