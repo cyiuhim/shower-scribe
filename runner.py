@@ -7,7 +7,7 @@ import uuid
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-from pynput import keyboard 
+from pynput import keyboard
 from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
@@ -18,7 +18,7 @@ from datetime import datetime
 
 
 class Conductor():
-    def __init__(self, BUTTON_PIN: int):
+    def __init__(self, BUTTON_PIN: int, LED_PIN: int):
         load_dotenv()
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
 
@@ -29,9 +29,11 @@ class Conductor():
 
         self.worker_pool = mp.Pool()
         self.BUTTON_PIN = BUTTON_PIN
+        self.LED_PIN = LED_PIN
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        
+        GPIO.setup(self.LED_PIN, GPIO.OUT)
+
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
         self.recorder = Recorder(stereo=False)
@@ -49,7 +51,8 @@ class Conductor():
 
         for recording_id in get_unresumed_recordings():
             # run the ai thing
-            pass
+            self.worker_pool.apply_async(Conductor.create_llm_worker,
+                                         args=(recording_id))
 
     def listen_for_input(self):
         """
@@ -60,33 +63,37 @@ class Conductor():
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
+                        GPIO.output(self.LED_PIN, GPIO.HIGH)
                         self.recorder.start_recording()
                     if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
+                        GPIO.output(self.LED_PIN, GPIO.LOW)
                         self.create_new_recording()
         else:
             if GPIO.input(self.BUTTON_PIN) and not self.recorder.is_recording:
+                GPIO.output(self.LED_PIN, GPIO.HIGH)
                 self.recorder.start_recording()
             if GPIO.input(self.BUTTON_PIN) == 0 and self.recorder.is_recording:
+                GPIO.output(self.LED_PIN, GPIO.LOW)
                 self.create_new_recording()
-
 
     def create_new_recording(self) -> bool:
         """
         Creates a new recording and returns True upon successful execution.
         """
         filename = f"resume_{uuid.uuid4()}.wav"
-        status = self.recorder.save_recording(self.recordings_directory, filename)
+        status = self.recorder.save_recording(
+            self.recordings_directory, filename)
         print(f"Recorder saved with status {status}.")
         if status == 0:
             recording_id = add_recording(filename)
             print("attempting transcription.")
             self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                         args=(os.path.join(self.recordings_directory, filename), recording_id),
+                                         args=(os.path.join(
+                                             self.recordings_directory, filename), recording_id),
                                          callback=self.transcription_callback,
                                          error_callback=self.transcription_error_callback
                                          )
         return not bool(status)
-
 
     @staticmethod
     def create_transcription_worker(audio_file: str, recording_id: int) -> tuple[str | None, int]:
@@ -123,25 +130,23 @@ class Conductor():
         print(update_recording_flag_transcribed(recording_id))
         Conductor.create_llm_worker(recording_id)
 
-
-
     def transcription_error_callback(self, data):
         """
         Runs upon transcription failure.
         """
         print("Transcription failure")
 
-
     def clean(self):
         """
         Runs upon conductor cleanup.
         """
         self.recorder.terminate_interface()
+        GPIO.cleanup()
         self.flask_server.join()
 
 
 if __name__ == "__main__":
-    conductor = Conductor(11)
+    conductor = Conductor(11, 18)
     while True:
         try:
             conductor.listen_for_input()
