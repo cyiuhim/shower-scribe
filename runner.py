@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from pynput import keyboard
 from multiprocessing import Process
 from workers.recorder import Recorder
-from webserver.app import startup_webserver
+from webserver.app import startup_webserver, user_settings
 import uuid
 from sql_interface import get_untranscribed_recordings, get_unresumed_recordings, add_recording, create_text_from_dict, get_recording_path
 

@@ -176,7 +176,7 @@ def show_settings():
 @app.route('/settings', methods=['POST'])
 def save_settings():
     new_settings = request.form.to_dict()
-    print(new_settings)
+
     user_settings["clustering_time_minutes"] = int(new_settings.get("grouping_minutes",default_settings["clustering_time_minutes"]))
     user_settings["transcription"] = new_settings.get("transcription_switch",'off') == 'on'
     user_settings["resume"] = new_settings.get("llm_switch",'off') == 'on' # the switches only reutnr values if they're true for some reason
@@ -208,6 +208,15 @@ def search_results():
 
     # Render a template with the search results and the original query
     return render_template('search_results.html', query=query, results=results)
+
+@app.route('/everything')
+def show_everything():
+    # Fetch and group the recordings by date
+    all_recordings = Recording.query.order_by(Recording.created_at.desc()).all()
+    all_texts = TextFile.query.order_by(TextFile.created_at.desc()).all()
+
+    # No need to convert dates here, as they are already formatted as strings in get_grouped_recordings
+    return render_template('everything.html', all_recordings=all_recordings, all_texts=all_texts)
 
 #functions
 

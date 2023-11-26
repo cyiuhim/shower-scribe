@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="container-sm">
+        <!-- displays all of the classes from all of the databases with all their links to all their pages -->
+        <h2>Recordings</h2>
+        <ul>
+            {% for recording in all_recordings %}
+                <li><a href="{{ url_for('show_recording', recording_id=recording.id) }}">{{ recording.display_name }} {{ recording.id }}</a></li>
+            {% endfor %}
+        </ul>
+        <h2>Texts</h2>
+        <ul>
+            {% for text in all_texts %}
+                <li><a href="{{ url_for('show_text', text_id=text.id) }}">{{ text.display_name }} {{ text.id }} {{text.type}}</a></li>
+            {% endfor %}
+        </ul>
+
+    </div>
+    
+{% endblock %}

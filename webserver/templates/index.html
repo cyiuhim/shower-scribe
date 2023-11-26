@@ -13,7 +13,7 @@
         <p>Click on the links above to view your recordings and texts.</p>
 
         <!-- Add the search form -->
-        <form action="{{ url_for('search') }}" method="post">
+        <form action="{{ url_for('show_search') }}" method="post">
             <label for="query">Search:</label>
             <input type="text" name="query" id="query" required>
             <button type="submit">Search</button>
