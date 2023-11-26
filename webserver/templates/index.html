@@ -13,7 +13,7 @@
         <p>Click on the links above to view your recordings and texts.</p>
 
         <div class="mb-4">
-            <form class="form-inline" action="{{ url_for('show_search') }}" method="post">
+            <form class="form-inline" action="{{ url_for('search_results') }}" method="get">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" placeholder="Search..." name="query" required>
                     <div class="input-group-append">
