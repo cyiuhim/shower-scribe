@@ -1,7 +1,7 @@
 import assemblyai
 import multiprocessing as mp
 import os
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import sys
 import uuid
 
@@ -16,7 +16,6 @@ from webserver.app import startup_webserver, user_settings
 
 from datetime import datetime
 
-
 class Conductor():
 
     recordings_directory = os.path.join(
@@ -27,14 +26,25 @@ class Conductor():
 
     def __init__(self, BUTTON_PIN: int, LED_PIN: int):
         load_dotenv()
+        # check that the api key is set
+        if os.environ.get("ASSEMBLY_AI_KEY") == None:
+            print("No AssemblyAI API key found. Please set the ASSEMBLY_AI_KEY environment variable.")
+            exit()
+        # check if cohere key is there
+        if os.environ.get("COHERE_API_KEY") == None:
+            print("No Cohere API key found. Please set the COHERE_API_KEY environment variable.")
+            exit()
+        
+        print(os.environ.get("ASSEMBLY_AI_KEY"))
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
 
-        self.worker_pool = mp.Pool()
+
+        self.worker_pool = mp.get_context("fork").Pool()
         self.BUTTON_PIN = BUTTON_PIN
         self.LED_PIN = LED_PIN
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(self.LED_PIN, GPIO.OUT)
+        # GPIO.setmode(GPIO.BOARD)
+        # GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        # GPIO.setup(self.LED_PIN, GPIO.OUT)
 
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
@@ -44,17 +54,19 @@ class Conductor():
             # run the transcription thing which should then auto call the ai thing
             status, text = get_recording_path(recording_id)
             if status:
+                print(f"attempting to transcribe {recording_id}")
                 self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                             args=(os.path.join(
-                                                 Conductor.recordings_directory, text), recording_id),
+                                             args=(text, recording_id),
                                              callback=self.transcription_callback,
                                              error_callback=self.transcription_error_callback
                                              )
 
         for recording_id in get_unresumed_recordings():
+            print(f"attempting to resume {recording_id}")
             # run the ai thing
-            self.worker_pool.apply_async(Conductor.create_llm_worker,
-                                         args=(recording_id))
+            if user_settings["resume"] == True:
+                self.worker_pool.apply_async(Conductor.create_llm_worker,
+                                            args=(recording_id))
 
     def listen_for_input(self):
         """
@@ -65,10 +77,10 @@ class Conductor():
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
-                        GPIO.output(self.LED_PIN, GPIO.HIGH)
+                        # GPIO.output(self.LED_PIN, GPIO.HIGH)
                         self.recorder.start_recording()
                     if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
-                        GPIO.output(self.LED_PIN, GPIO.LOW)
+                        # GPIO.output(self.LED_PIN, GPIO.LOW)
                         self.create_new_recording()
         else:
             if GPIO.input(self.BUTTON_PIN) and not self.recorder.is_recording:
@@ -82,18 +94,22 @@ class Conductor():
         """
         Creates a new recording and returns True upon successful execution.
         """
-        filename = f"resume_{uuid.uuid4()}.wav"
+        filename = f"recording_{uuid.uuid4()}.wav"
         status = self.recorder.save_recording(
             Conductor.recordings_directory, filename)
         print(f"Recorder saved with status {status}.")
         if status == 0:
             recording_id = add_recording(filename)
-            print("attempting transcription.")
-            self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                         args=(filename, recording_id),
-                                         callback=self.transcription_callback,
-                                         error_callback=self.transcription_error_callback
-                                         )
+            if user_settings["transcription"] == True:
+                print("attempting transcription.")
+                self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                            args=(filename, recording_id),
+                                            callback=self.transcription_callback,
+                                            error_callback=self.transcription_error_callback
+                                            )
+            else:
+                print("transcription disabled")
+            
         return not bool(status)
 
     @staticmethod
@@ -102,9 +118,9 @@ class Conductor():
         Class method for creating transcriptions.
         """
         transcriber = Transcriber()
-        transcript = transcriber.transcribe(os.path.join(
-            Conductor.recordings_directory, audio_file))
-        filename = audio_file.replace(".wav", ".txt")
+        transcription_audio_path = os.path.join(Conductor.recordings_directory, audio_file)
+        transcript = transcriber.transcribe(transcription_audio_path)
+        filename = f"transcription_{uuid.uuid4()}.txt"
 
         if transcript.text:
             print(transcript.text)
@@ -131,7 +147,10 @@ class Conductor():
 
         print(create_text_from_dict(text_creation_dict))
         print(update_recording_flag_transcribed(recording_id))
-        Conductor.create_llm_worker(recording_id)
+        if user_settings["resume"] == True:
+            Conductor.create_llm_worker(recording_id)
+        else:
+            print("resume disabled")
 
     def transcription_error_callback(self, data):
         """

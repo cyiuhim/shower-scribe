@@ -8,9 +8,10 @@
             <a href="{{ url_for('show_main') }}" class="btn btn-secondary">Back to Main Page</a>
         </div>
 
+        
         <!-- A form to update the settings --> 
         <form method="post" action="{{ url_for('save_settings') }}">
-            
+            <p>Shower scribe has to be restarted for privacy to take effect.</p>
             <div class="d-grid gap-2 mb-2">
                 <div class="form-group">
                     <label for="grouping_minutes">Number of Minutes for Grouping:</label>
