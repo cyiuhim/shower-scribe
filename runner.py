@@ -4,12 +4,12 @@ import os
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-# from pynput import keyboard 
+from pynput import keyboard
 from multiprocessing import Process
 from workers.recorder import Recorder
 from webserver.app import startup_webserver
 import uuid
-from sql_interface import get_untranscribed_recordings, get_unresumed_recordings, add_recording, create_text_from_dict
+from sql_interface import get_untranscribed_recordings, get_unresumed_recordings, add_recording, create_text_from_dict, get_recording_path
 
 from datetime import datetime
 
@@ -19,23 +19,29 @@ class Conductor():
         load_dotenv()
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
 
-        self.recordings_directory = os.path.join(".","webserver","userdata","recordings")
-        self.transcriptions_directory = os.path.join(".","webserver","userdata","texts")
+        self.recordings_directory = os.path.join(
+            ".", "webserver", "userdata", "recordings")
+        self.transcriptions_directory = os.path.join(
+            ".", "webserver", "userdata", "texts")
 
         self.worker_pool = mp.Pool()
-        
+
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
         self.recorder = Recorder(stereo=False)
 
         for recording_id in get_untranscribed_recordings():
             # run the transcription thing which should then auto call the ai thing
-            pass
+            self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                         args=(os.path.join(
+                                             self.recordings_directory, get_recording_path(recording_id)), recording_id),
+                                         callback=self.transcription_callback,
+                                         error_callback=self.transcription_error_callback
+                                         )
 
         for recording_id in get_unresumed_recordings():
-            pass
             # run the ai thing
-
+            pass
 
     def listen_for_input(self):
         """
@@ -48,13 +54,15 @@ class Conductor():
                     self.recorder.start_recording()
                 if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
                     filename = f"resume_{uuid.uuid4()}.wav"
-                    status = self.recorder.save_recording(self.recordings_directory, filename)
+                    status = self.recorder.save_recording(
+                        self.recordings_directory, filename)
                     print(f"Recorder saved with status {status}.")
                     if status == 0:
                         recording_id = add_recording(filename)
                         print("attempting transcription.")
                         self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                                     args=(os.path.join(self.recordings_directory, filename), recording_id),
+                                                     args=(os.path.join(
+                                                         self.recordings_directory, filename), recording_id),
                                                      callback=self.transcription_callback,
                                                      error_callback=self.transcription_error_callback
                                                      )
@@ -66,7 +74,8 @@ class Conductor():
         """
         transcriber = Transcriber()
         transcript = transcriber.transcribe(audio_file)
-        filename = audio_file.replace(".wav",".txt").replace("recordings", "texts")
+        filename = audio_file.replace(
+            ".wav", ".txt").replace("recordings", "texts")
         if transcript.text:
             with open(filename, "w") as f:
                 f.write(transcript.text)
@@ -78,12 +87,12 @@ class Conductor():
         """
         filename, recording_id = data
         text_creation_dict = {
-                "text_filename": filename,
-                "display_name": f"Transcription of {recording_id}",
-                "type": 0,
-                "associated_recording_id": recording_id
-                }
-        
+            "text_filename": filename,
+            "display_name": f"Transcription of {recording_id}",
+            "type": 0,
+            "associated_recording_id": recording_id
+        }
+
         create_text_from_dict(text_creation_dict)
 
     def transcription_error_callback(self, data):
@@ -109,5 +118,3 @@ if __name__ == "__main__":
             print("Exiting")
             conductor.clean()
             exit()
-
-
