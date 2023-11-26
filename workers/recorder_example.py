@@ -8,7 +8,8 @@ def main():
 
     recorder.start_recording()
     sleep(2)  # when implementing this would be something like .on_button_press()
-    recorder.save_recording("webserver/userdata/recordings","test.wav")  # will save to ./recordings/test.wav
+    # will save to ./recordings/test.wav
+    recorder.save_recording("webserver/userdata/recordings", "test.wav")
     print("complete 1")
 
     # to demonstrate ability to do multiple recordings before resetting

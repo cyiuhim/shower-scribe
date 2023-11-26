@@ -8,25 +8,28 @@
             <a href="{{ url_for('show_main') }}" class="btn btn-secondary">Back to Main Page</a>
         </div>
 
-        <div class="card my-4" style="border-color: #e9d8e4;">
-            <div class="card-body" style="background-color: white;">
-                <h2 class="card-title" style="color: #343f71;">Privacy</h2>
-                <!-- Privacy settings content -->
-            </div>
-        </div>
+        <!-- A form to update the settings --> 
+        <form method="post" action="{{ url_for('save_settings') }}">
+            
+            <div class="d-grid gap-2 mb-1">
+                <div class="form-group">
+                    <label for="grouping_minutes">Number of Minutes for Grouping:</label>
+                    <input type="number" class="form-control" id="grouping_minutes" name="grouping_minutes" value="{{ user_settings.clustering_time_minutes }}" required>
+                </div>
 
-        <div class="card my-4" style="border-color: #e9d8e4;">
-            <div class="card-body" style="background-color: white;">
-                <h2 class="card-title" style="color: #343f71;">Display</h2>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="transcription_switch" name="transcription_switch" {% if user_settings.transcription %}checked{% endif %}>
+                    <label class="form-check-label" for="transcription_switch">Enable Transcription (sends audio recordings to AssemblyAI)</label>
+                </div>
+    
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="llm_switch" name="llm_switch" {% if user_settings.resume %}checked{% endif %}>
+                    <label class="form-check-label" for="llm_switch">Enable LLM Service (sends transcriptions to Cohere)</label>
+                </div>
             </div>
-        </div>
 
-        <div class="card my-4" style="border-color: #e9d8e4;">
-            <div class="card-body" style="background-color: white;">
-                <h2 class="card-title" style="color: #343f71;">Storage</h2>
-                <!-- Storage settings content -->
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
     </div>
     
 {% endblock %}

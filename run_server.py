@@ -1,8 +1,8 @@
-from webserver.app import start_app
+from webserver.app import startup_webserver
 from test_llm_interactions import test
 import sql_interface
 
 if __name__ == "__main__":
-    start_app()
+    startup_webserver(debug=True)
 
 

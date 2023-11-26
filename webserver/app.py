@@ -21,6 +21,12 @@ from flask import request, jsonify
 
 app = Flask(__name__)
 
+default_settings = {
+    "clustering_time_minutes" : 180,
+    "transcription":True,
+    "resume":True,
+}
+
 # Settings setup
 # This goes here instead of the data_interface because it's used by the flask app, not the data_interface, and this would lead to circular imports
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -32,12 +38,7 @@ if os.path.exists(user_settings_path):
 else:
     print(f"No settings file found {user_settings_path}. Using default settings.")
 
-    user_settings = {
-        "clustering_time_minutes" : 180,
-        "transcription":True,
-        "resume":True,
-        "brainstorm":True,
-    }
+    user_settings = default_settings
     try:
         with open(user_settings_path, 'w') as f:
             json.dump(user_settings, f)
@@ -116,19 +117,20 @@ def send_recording(path):
 def show_recording(recording_id):
     recording = Recording.query.get_or_404(recording_id)
     resume_text = "No resume available"
-
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
+    print(recording.associated_resume_id)
     print(associated_resume)
     if associated_resume:
         # Assuming the text content is stored in a file
         try:
-            with open(f"userdata/texts/{associated_resume.text_filename}", "r") as f:
+            with open(f"webserver/userdata/texts/{associated_resume.text_filename}", "r") as f:
                 resume_text = f.read()
         except IOError:
-            resume_text = "Error reading transcript file."
+            resume_text = "Error reading resume file. It might not be available yet."
 
-    return render_template('recording.html', recording=recording, resume_text=resume_text)
+    transcriptionid = recording.associated_transcription_id
+    return render_template('recording.html', recording=recording, resume_text=resume_text, transcriptionid=transcriptionid)
 
 
 @app.route('/texts/<int:text_id>', methods=["GET", "POST"])
@@ -152,10 +154,10 @@ def delete_recording(recording_id):
     else:
         return jsonify({"success": False}), 404
     
-@app.route('/settings')
+@app.route('/settings', methods=['GET'])
 def show_settings():
     basedir = os.path.abspath(os.path.dirname(__file__))
-    user_settings_path = os.path.join(basedir, 'userdata/user_settings.json')
+    user_settings_path = os.path.join(basedir, 'userdata','user_settings.json')
     user_settings = {}
     if os.path.exists(user_settings_path):
         with open(user_settings_path, 'r') as f:
@@ -163,8 +165,31 @@ def show_settings():
     else:
         print(f"No settings file found {user_settings_path}. Using default settings.")
         # Define default settings here if needed
-
+        user_settings = default_settings
+        try:
+            with open(user_settings_path, 'w') as f:
+                json.dump(user_settings, f)
+        except:
+            print(f"Error saving settings file {user_settings_path}")
+    
     return render_template('settings.html', user_settings=user_settings)
+
+@app.route('/settings', methods=['POST'])
+def save_settings():
+    new_settings = request.form.to_dict()
+
+    user_settings["clustering_time_minutes"] = int(new_settings.get("grouping_minutes",default_settings["clustering_time_minutes"]))
+    user_settings["transcription"] = new_settings.get("transcription_switch",'off') == 'on'
+    user_settings["resume"] = new_settings.get("llm_switch",'off') == 'on' # the switches only reutnr values if they're true for some reason
+    
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    user_settings_path = os.path.join(basedir, 'userdata','user_settings.json')
+    try:
+        with open(user_settings_path, 'w') as f:
+            json.dump(user_settings, f)
+    except:
+        print(f"Error saving settings file {user_settings_path}")
+    return redirect(url_for('show_main'))
 
 @app.route('/search')
 def show_search():
@@ -175,15 +200,25 @@ def show_search():
 @app.route('/search_results')
 def search_results():
     query = request.args.get('query', '')  # Get the search query from URL parameters
+    num_results = int(request.args.get('n', 3))  # Get the number of results to show from URL parameters
 
     # Assuming get_n_closest_ids function returns a list of result IDs
-    result_ids = get_n_closest_ids(1, query, 3)
+    result_ids = get_n_closest_ids(1, query, num_results)
 
     # Fetch the results from the database
     results = Recording.query.filter(Recording.id.in_(result_ids)).all()
 
     # Render a template with the search results and the original query
     return render_template('search_results.html', query=query, results=results)
+
+@app.route('/everything')
+def show_everything():
+    # Fetch and group the recordings by date
+    all_recordings = Recording.query.order_by(Recording.created_at.desc()).all()
+    all_texts = TextFile.query.order_by(TextFile.created_at.desc()).all()
+
+    # No need to convert dates here, as they are already formatted as strings in get_grouped_recordings
+    return render_template('everything.html', all_recordings=all_recordings, all_texts=all_texts)
 
 #functions
 
@@ -230,10 +265,9 @@ def group_recordings(recordings):
 
 # Run the app
 
-def start_app():
-    # print(f"To test that the OS keys are accessible: {os.getenv('COHERE_API_KEY')}")
-    app.run(host='0.0.0.0', debug=True,port=8000)
+def startup_webserver(debug=False):
+    app.run(host='0.0.0.0', debug=debug,port=8000)
 
 if __name__ == "__main__":
-    start_app()
+    startup_webserver(debug=True)
     
