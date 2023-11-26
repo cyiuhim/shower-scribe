@@ -62,7 +62,7 @@ class Conductor():
         Listen for keyboard input and orchestrate recording/transcription workers.
 
         """
-        if len(sys.argv) > 1 and sys.argv[1] == "test":
+        if len(sys.argv) > |1 and sys.argv[1] == "test":
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
