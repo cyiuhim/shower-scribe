@@ -18,6 +18,7 @@
         <form action="{{ url_for('search_results') }}" method="get">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" placeholder="Search..." name="query">
+                <input type="number" class="form-control" placeholder="Results" name="n" min="3" max="50" step="1" value="10" required>
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="submit">Go</button>
                 </div>

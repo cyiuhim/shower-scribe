@@ -199,9 +199,10 @@ def show_search():
 @app.route('/search_results')
 def search_results():
     query = request.args.get('query', '')  # Get the search query from URL parameters
+    num_results = int(request.args.get('n', 3))  # Get the number of results to show from URL parameters
 
     # Assuming get_n_closest_ids function returns a list of result IDs
-    result_ids = get_n_closest_ids(1, query, 3)
+    result_ids = get_n_closest_ids(1, query, num_results)
 
     # Fetch the results from the database
     results = Recording.query.filter(Recording.id.in_(result_ids)).all()
