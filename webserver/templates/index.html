@@ -12,16 +12,12 @@
         <p>It is built using Python and Flask.</p>
         <p>Click on the links above to view your recordings and texts.</p>
 
-        <div class="mb-4">
-            <form class="form-inline" action="{{ url_for('search_results') }}" method="get">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Search..." name="query" required>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit">Go</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+        <!-- Add the search form -->
+        <form action="{{ url_for('show_search') }}" method="post">
+            <label for="query">Search:</label>
+            <input type="text" name="query" id="query" required>
+            <button type="submit">Search</button>
+        </form>
     </div>
 
     <h2 class="mt-4" style="color: #343f71;">Recordings</h2>
