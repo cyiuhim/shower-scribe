@@ -6,7 +6,7 @@ import datetime
 
 # Database methods
 
-def add_recording(recording_filename):
+def add_recording(recording_filename)->int:
     with app.app_context():
         recording = Recording()
         recording.recording_filename = recording_filename
@@ -17,13 +17,13 @@ def add_recording(recording_filename):
         db.session.commit()
         return recording.id
 
-def get_recording_path(recording_id):
+def get_recording_path(recording_id) -> tuple[bool, str]:
     with app.app_context():
         recording = Recording.query.filter_by(id=recording_id).first()
         if recording:
-            return recording.recording_filename
+            return True, recording.recording_filename
         else:
-            return None
+            return False, ""
         
 def get_recording_as_dict(recording_id):
     with app.app_context():

@@ -22,8 +22,10 @@ class Conductor():
         load_dotenv()
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
 
-        self.recordings_directory = os.path.join(".","webserver","userdata","recordings")
-        self.transcriptions_directory = os.path.join(".","webserver","userdata","texts")
+        self.recordings_directory = os.path.join(
+            ".", "webserver", "userdata", "recordings")
+        self.transcriptions_directory = os.path.join(
+            ".", "webserver", "userdata", "texts")
 
         self.worker_pool = mp.Pool()
         self.BUTTON_PIN = BUTTON_PIN
@@ -36,12 +38,18 @@ class Conductor():
 
         for recording_id in get_untranscribed_recordings():
             # run the transcription thing which should then auto call the ai thing
-            pass
+            status, text = get_recording_path(recording_id)
+            if status:
+                self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                             args=(os.path.join(
+                                                 self.recordings_directory, text), recording_id),
+                                             callback=self.transcription_callback,
+                                             error_callback=self.transcription_error_callback
+                                             )
 
         for recording_id in get_unresumed_recordings():
-            pass
             # run the ai thing
-
+            pass
 
     def listen_for_input(self):
         """
@@ -81,13 +89,14 @@ class Conductor():
 
 
     @staticmethod
-    def create_transcription_worker(audio_file: str, recording_id: str) -> tuple[str | None, str]:
+    def create_transcription_worker(audio_file: str, recording_id: int) -> tuple[str | None, int]:
         """
         Class method for creating transcriptions.
         """
         transcriber = Transcriber()
         transcript = transcriber.transcribe(audio_file)
-        filename = audio_file.replace(".wav",".txt").replace("recordings", "texts")
+        filename = audio_file.replace(
+            ".wav", ".txt").replace("recordings", "texts")
         if transcript.text:
             with open(filename, "w") as f:
                 f.write(transcript.text)
@@ -97,20 +106,21 @@ class Conductor():
     def create_llm_worker(recording_id: int):
         full_resume_and_title(recording_id)
 
-    def transcription_callback(self, data: tuple[str | None, str]):
+    def transcription_callback(self, data: tuple[str | None, int]):
         """
         Transcription callback.
         """
         filename, recording_id = data
         text_creation_dict = {
-                "text_filename": filename,
-                "display_name": f"Transcription of {recording_id}",
-                "type": 0,
-                "associated_recording_id": recording_id
-                }
-        
+            "text_filename": filename,
+            "display_name": f"Transcription of {recording_id}",
+            "type": 0,
+            "associated_recording_id": recording_id
+        }
+
         create_text_from_dict(text_creation_dict)
         update_recording_flag_transcribed(recording_id)
+        Conductor.create_llm_worker(recording_id)
 
 
 
@@ -138,5 +148,3 @@ if __name__ == "__main__":
             print("Exiting")
             conductor.clean()
             exit()
-
-
