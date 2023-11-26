@@ -7,7 +7,7 @@ import uuid
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-#from pynput import keyboard
+from pynput import keyboard
 from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
@@ -28,7 +28,6 @@ class Conductor():
     def __init__(self, BUTTON_PIN: int, LED_PIN: int):
         load_dotenv()
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
-
 
         self.worker_pool = mp.Pool()
         self.BUTTON_PIN = BUTTON_PIN
@@ -62,7 +61,7 @@ class Conductor():
         Listen for keyboard input and orchestrate recording/transcription workers.
 
         """
-        if len(sys.argv) > |1 and sys.argv[1] == "test":
+        if len(sys.argv) > 1 and sys.argv[1] == "test":
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
@@ -103,7 +102,8 @@ class Conductor():
         Class method for creating transcriptions.
         """
         transcriber = Transcriber()
-        transcript = transcriber.transcribe(os.path.join(Conductor.recordings_directory, audio_file))
+        transcript = transcriber.transcribe(os.path.join(
+            Conductor.recordings_directory, audio_file))
         filename = audio_file.replace(".wav", ".txt")
 
         if transcript.text:
