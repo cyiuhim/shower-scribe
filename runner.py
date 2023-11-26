@@ -8,6 +8,8 @@ from pynput import keyboard
 from multiprocessing import Process
 from workers.recorder import Recorder
 from webserver.app import startup_webserver
+import uuid
+from sql_interface import add_recording, create_text_from_dict
 
 from datetime import datetime
 
@@ -37,19 +39,20 @@ class Conductor():
                 if event.key == keyboard.Key.space and not self.recorder.is_recording:
                     self.recorder.start_recording()
                 if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
-                    filename = datetime.now().strftime("recording-%Y-%m-%d-%H-%M.wav")
+                    filename = f"resume_{uuid.uuid4()}.wav"
                     status = self.recorder.save_recording(self.recordings_directory, filename)
                     print(f"Recorder saved with status {status}.")
                     if status == 0:
+                        recording_id = add_recording(filename)
                         print("attempting transcription.")
                         self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                                     args=(os.path.join(self.recordings_directory, filename),),
+                                                     args=(os.path.join(self.recordings_directory, filename), recording_id),
                                                      callback=self.transcription_callback,
                                                      error_callback=self.transcription_error_callback
                                                      )
 
     @staticmethod
-    def create_transcription_worker(audio_file: str) -> str | None:
+    def create_transcription_worker(audio_file: str, recording_id: str) -> tuple[str | None, str]:
         """
         Class method for creating transcriptions.
         """
@@ -59,13 +62,21 @@ class Conductor():
         if transcript.text:
             with open(filename, "w") as f:
                 f.write(transcript.text)
-        return transcript.text
+        return filename, recording_id
 
-    def transcription_callback(self, data: str | None):
+    def transcription_callback(self, data: tuple[str | None, str]):
         """
         Transcription callback.
         """
-        print(data)
+        filename, recording_id = data
+        text_creation_dict = {
+                "text_filename": filename,
+                "display_name": f"Transcription of {recording_id}",
+                "type": 0,
+                "associated_recording_id": recording_id
+                }
+        
+        create_text_from_dict(text_creation_dict)
 
     def transcription_error_callback(self, data):
         """
