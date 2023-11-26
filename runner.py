@@ -7,7 +7,7 @@ import uuid
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-from pynput import keyboard
+#from pynput import keyboard
 from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
