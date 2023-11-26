@@ -2,6 +2,7 @@
 # The slightly odd structure of this though is that the database is still owned by the flask server to keep all of the model interractions simple
 
 from webserver.app import app, db, Recording, TextFile
+import datetime
 
 # Database methods
 
@@ -9,8 +10,10 @@ def add_recording(recording_filename):
     with app.app_context():
         recording = Recording()
         recording.recording_filename = recording_filename
-        recording.display_name = recording_filename
+        recording.created_at = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-5)))
         db.session.add(recording)
+        db.session.commit()
+        recording.display_name = f"Shower Thoughts #{recording.id}"
         db.session.commit()
         return recording.id
 
@@ -51,6 +54,19 @@ def get_text_as_dict(text_id):
             }
         else:
             return None
+        
+def get_untranscribed_recordings():
+    with app.app_context():
+        recordings = Recording.query.filter_by(flag_transcribed=False).all()
+        ids = [recording.id for recording in recordings]
+        return ids
+
+def get_unresumed_recordings():
+    """Get the ids of all recordings that have been transcribed but not resumed. Ready to be AIed"""
+    with app.app_context():
+        recordings = Recording.query.filter_by(flag_resumed=False,flag_transcribed=True).all()
+        ids = [recording.id for recording in recordings]
+        return ids
         
 
 def create_text_from_dict(text_dict):

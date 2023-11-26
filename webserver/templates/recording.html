@@ -31,8 +31,8 @@
                     <pre style="color: #343f71; padding: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; max-height: none;">{{ resume_text }}</pre>
                 </div>
             
-            {{ if recording.associated_transcription_id != 0 }}
-                <a href="{{ url_for('show_text', text_id=recording.associated_transcription_id) }}" id="viewTranscriptBtn" class="btn" style="background-color: white; color: #343f71; border: 1px solid #343f71;">View Complete Transcript</a>
+            {%if transcriptionid is not none%}
+                <a href="{{ url_for('show_text', text_id=transcriptionid) }}" id="viewTranscriptBtn" class="btn" style="background-color: white; color: #343f71; border: 1px solid #343f71;">View Complete Transcript</a>
             {% endif %}
         </div>
     </div>

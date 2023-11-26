@@ -19,6 +19,12 @@ from flask import request, jsonify
 
 app = Flask(__name__)
 
+default_settings = {
+    "clustering_time_minutes" : 180,
+    "transcription":True,
+    "resume":True,
+}
+
 # Settings setup
 # This goes here instead of the data_interface because it's used by the flask app, not the data_interface, and this would lead to circular imports
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -30,12 +36,7 @@ if os.path.exists(user_settings_path):
 else:
     print(f"No settings file found {user_settings_path}. Using default settings.")
 
-    user_settings = {
-        "clustering_time_minutes" : 180,
-        "transcription":True,
-        "resume":True,
-        "brainstorm":True,
-    }
+    user_settings = default_settings
     try:
         with open(user_settings_path, 'w') as f:
             json.dump(user_settings, f)
@@ -113,8 +114,7 @@ def send_recording(path):
 @app.route('/recordings/<int:recording_id>', methods=["GET", "POST"])
 def show_recording(recording_id):
     recording = Recording.query.get_or_404(recording_id)
-    resume_text = "No transcript available"
-
+    resume_text = "No resume available"
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
     if associated_resume:
@@ -123,9 +123,10 @@ def show_recording(recording_id):
             with open(f"userdata/texts/{associated_resume.text_filename}", "r") as f:
                 resume_text = f.read()
         except IOError:
-            resume_text = "Error reading transcript file."
+            resume_text = "Error reading resume file. It might not be available yet."
 
-    return render_template('recording.html', recording=recording, resume_text=resume_text)
+    transcriptionid = recording.associated_transcription_id
+    return render_template('recording.html', recording=recording, resume_text=resume_text, transcriptionid=transcriptionid)
 
 
 @app.route('/texts/<int:text_id>', methods=["GET", "POST"])
@@ -149,10 +150,10 @@ def delete_recording(recording_id):
     else:
         return jsonify({"success": False}), 404
     
-@app.route('/settings')
+@app.route('/settings', methods=['GET'])
 def show_settings():
     basedir = os.path.abspath(os.path.dirname(__file__))
-    user_settings_path = os.path.join(basedir, 'userdata/user_settings.json')
+    user_settings_path = os.path.join(basedir, 'userdata','user_settings.json')
     user_settings = {}
     if os.path.exists(user_settings_path):
         with open(user_settings_path, 'r') as f:
@@ -160,8 +161,32 @@ def show_settings():
     else:
         print(f"No settings file found {user_settings_path}. Using default settings.")
         # Define default settings here if needed
+        user_settings = default_settings
+        try:
+            with open(user_settings_path, 'w') as f:
+                json.dump(user_settings, f)
+        except:
+            print(f"Error saving settings file {user_settings_path}")
+    
 
     return render_template('settings.html', user_settings=user_settings)
+
+@app.route('/settings', methods=['POST'])
+def save_settings():
+    new_settings = request.form.to_dict()
+    # copy the settings from the form into the user_settings dict, instead of just replacing it
+    for key in user_settings:
+        if key in new_settings:
+            user_settings[key] = new_settings[key]
+    
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    user_settings_path = os.path.join(basedir, 'userdata','user_settings.json')
+    try:
+        with open(user_settings_path, 'w') as f:
+            json.dump(user_settings, f)
+    except:
+        print(f"Error saving settings file {user_settings_path}")
+    return redirect(url_for('show_settings'))
 
 @app.route('/search')
 def show_search():
@@ -227,9 +252,9 @@ def group_recordings(recordings):
 
 # Run the app
 
-def startup_webserver():
-    app.run(host='0.0.0.0', debug=False,port=8000)
+def startup_webserver(debug=False):
+    app.run(host='0.0.0.0', debug=debug,port=8000)
 
 if __name__ == "__main__":
-    startup_webserver()
+    startup_webserver(debug=True)
     

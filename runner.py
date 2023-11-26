@@ -4,10 +4,11 @@ import os
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-from pynput import keyboard 
+# from pynput import keyboard 
 from multiprocessing import Process
 from workers.recorder import Recorder
 from webserver.app import startup_webserver
+from sql_interface import get_untranscribed_recordings, get_unresumed_recordings
 
 from datetime import datetime
 
@@ -25,6 +26,14 @@ class Conductor():
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
         self.recorder = Recorder(stereo=False)
+
+        for recording_id in get_untranscribed_recordings():
+            # run the transcription thing which should then auto call the ai thing
+            pass
+
+        for recording_id in get_unresumed_recordings():
+            pass
+            # run the ai thing
 
 
     def listen_for_input(self):
@@ -60,6 +69,7 @@ class Conductor():
             with open(filename, "w") as f:
                 f.write(transcript.text)
         return transcript.text
+    
 
     def transcription_callback(self, data: str | None):
         """
