@@ -102,7 +102,7 @@ class Recorder:
         self.recorder_thread.join()  # waits for thread to finish by itself
 
         # creates a path to a file in the form ../$directory/$filename
-        path_home: str = "../"
+        path_home: str = "./"
         file_path: str = path.join(path_home, directory, filename)
 
         # configuring the file
