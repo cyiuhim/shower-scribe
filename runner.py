@@ -105,9 +105,10 @@ class Conductor():
         filename = audio_file.replace(
             ".wav", ".txt").replace("recordings", "texts")
         if transcript.text:
+            print(transcript.text)
             with open(filename, "w") as f:
                 f.write(transcript.text)
-        return transcript.text, recording_id
+        return filename, recording_id
 
     @staticmethod
     def create_llm_worker(recording_id: int):
@@ -125,8 +126,8 @@ class Conductor():
             "associated_recording_id": recording_id
         }
 
-        create_text_from_dict(text_creation_dict)
-        update_recording_flag_transcribed(recording_id)
+        print(create_text_from_dict(text_creation_dict))
+        print(update_recording_flag_transcribed(recording_id))
         Conductor.create_llm_worker(recording_id)
 
     def transcription_error_callback(self, data):
