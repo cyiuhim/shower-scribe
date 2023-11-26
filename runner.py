@@ -1,21 +1,24 @@
 import assemblyai
 import multiprocessing as mp
 import os
+import RPi.GPIO as GPIO
+import sys
+import uuid
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-from pynput import keyboard
+from pynput import keyboard 
+from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
+from sql_interface import *
 from webserver.app import startup_webserver, user_settings
-import uuid
-from sql_interface import get_untranscribed_recordings, get_unresumed_recordings, add_recording, create_text_from_dict, get_recording_path
 
 from datetime import datetime
 
 
 class Conductor():
-    def __init__(self):
+    def __init__(self, BUTTON_PIN: int):
         load_dotenv()
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
 
@@ -25,19 +28,24 @@ class Conductor():
             ".", "webserver", "userdata", "texts")
 
         self.worker_pool = mp.Pool()
-
+        self.BUTTON_PIN = BUTTON_PIN
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
         self.recorder = Recorder(stereo=False)
 
         for recording_id in get_untranscribed_recordings():
             # run the transcription thing which should then auto call the ai thing
-            self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                         args=(os.path.join(
-                                             self.recordings_directory, get_recording_path(recording_id)), recording_id),
-                                         callback=self.transcription_callback,
-                                         error_callback=self.transcription_error_callback
-                                         )
+            status, text = get_recording_path(recording_id)
+            if status:
+                self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                             args=(os.path.join(
+                                                 self.recordings_directory, text), recording_id),
+                                             callback=self.transcription_callback,
+                                             error_callback=self.transcription_error_callback
+                                             )
 
         for recording_id in get_unresumed_recordings():
             # run the ai thing
@@ -48,27 +56,40 @@ class Conductor():
         Listen for keyboard input and orchestrate recording/transcription workers.
 
         """
-        with keyboard.Events() as events:
-            for event in events:
-                if event.key == keyboard.Key.space and not self.recorder.is_recording:
-                    self.recorder.start_recording()
-                if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
-                    filename = f"resume_{uuid.uuid4()}.wav"
-                    status = self.recorder.save_recording(
-                        self.recordings_directory, filename)
-                    print(f"Recorder saved with status {status}.")
-                    if status == 0:
-                        recording_id = add_recording(filename)
-                        print("attempting transcription.")
-                        self.worker_pool.apply_async(Conductor.create_transcription_worker,
-                                                     args=(os.path.join(
-                                                         self.recordings_directory, filename), recording_id),
-                                                     callback=self.transcription_callback,
-                                                     error_callback=self.transcription_error_callback
-                                                     )
+        if sys.argv[1] == "test":
+            with keyboard.Events() as events:
+                for event in events:
+                    if event.key == keyboard.Key.space and not self.recorder.is_recording:
+                        self.recorder.start_recording()
+                    if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
+                        self.create_new_recording()
+        else:
+            if GPIO.input(self.BUTTON_PIN) and not self.recorder.is_recording:
+                self.recorder.start_recording()
+            if GPIO.input(self.BUTTON_PIN) == 0 and self.recorder.is_recording:
+                self.create_new_recording()
+
+
+    def create_new_recording(self) -> bool:
+        """
+        Creates a new recording and returns True upon successful execution.
+        """
+        filename = f"resume_{uuid.uuid4()}.wav"
+        status = self.recorder.save_recording(self.recordings_directory, filename)
+        print(f"Recorder saved with status {status}.")
+        if status == 0:
+            recording_id = add_recording(filename)
+            print("attempting transcription.")
+            self.worker_pool.apply_async(Conductor.create_transcription_worker,
+                                         args=(os.path.join(self.recordings_directory, filename), recording_id),
+                                         callback=self.transcription_callback,
+                                         error_callback=self.transcription_error_callback
+                                         )
+        return not bool(status)
+
 
     @staticmethod
-    def create_transcription_worker(audio_file: str, recording_id: str) -> tuple[str | None, str]:
+    def create_transcription_worker(audio_file: str, recording_id: int) -> tuple[str | None, int]:
         """
         Class method for creating transcriptions.
         """
@@ -79,9 +100,13 @@ class Conductor():
         if transcript.text:
             with open(filename, "w") as f:
                 f.write(transcript.text)
-        return transcript.text
+        return transcript.text, recording_id
 
-    def transcription_callback(self, data: tuple[str | None, str]):
+    @staticmethod
+    def create_llm_worker(recording_id: int):
+        full_resume_and_title(recording_id)
+
+    def transcription_callback(self, data: tuple[str | None, int]):
         """
         Transcription callback.
         """
@@ -94,12 +119,17 @@ class Conductor():
         }
 
         create_text_from_dict(text_creation_dict)
+        update_recording_flag_transcribed(recording_id)
+        Conductor.create_llm_worker(recording_id)
+
+
 
     def transcription_error_callback(self, data):
         """
         Runs upon transcription failure.
         """
         print("Transcription failure")
+
 
     def clean(self):
         """
@@ -110,7 +140,7 @@ class Conductor():
 
 
 if __name__ == "__main__":
-    conductor = Conductor()
+    conductor = Conductor(11)
     while True:
         try:
             conductor.listen_for_input()
