@@ -51,7 +51,8 @@ class Conductor():
 
         for recording_id in get_unresumed_recordings():
             # run the ai thing
-            pass
+            self.worker_pool.apply_async(Conductor.create_llm_worker,
+                                         args=(recording_id))
 
     def listen_for_input(self):
         """
