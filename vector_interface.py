@@ -2,14 +2,13 @@
 import chromadb
 chromaClient = chromadb.PersistentClient(path="llm_services/chroma_db")
 
-text_collection = chromaClient.get_or_create_collection("transcriptions")
-
 def add_vector_from_content(text_type,text_id,content):
     # add a vector to the database from the content of a text file
     # text_type is an int, 0 = transcription, 1 = resume, 2 = brainstorm
     # text_id is the id of the text file in the database
     # content is the content of the text file that is then embedded into a vector and stored in the DB
     # returns true if successful, false otherwise
+    text_collection = chromaClient.get_or_create_collection("transcriptions")
     try:
         text_collection.add(
             documents=[content],
@@ -23,6 +22,7 @@ def add_vector_from_content(text_type,text_id,content):
 
 def remove_vector(text_type,text_id):
     # remove a vector from the database
+    text_collection = chromaClient.get_or_create_collection("transcriptions")
     count_before = text_collection.count()
     text_collection.delete(
         ids=[text_id],
@@ -40,6 +40,7 @@ def get_n_closest_ids(text_type,content_to_match,n):
     # content_to_match is the content of the text file that is then embedded into a vector and compared to the vectors in the DB for the n closest matches
     # n is the number of closest ids to return
     # returns a list of n ids
+    text_collection = chromaClient.get_or_create_collection("transcriptions")
     where = None
     if text_type is not None:
         where = {"text_type": text_type}
