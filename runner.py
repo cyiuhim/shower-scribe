@@ -9,8 +9,7 @@ from multiprocessing import Process
 from workers.recorder import Recorder
 from webserver.app import startup_webserver
 import uuid
-from sql_interface import add_recording, create_text_from_dict
-from sql_interface import get_untranscribed_recordings, get_unresumed_recordings
+from sql_interface import get_untranscribed_recordings, get_unresumed_recordings, add_recording, create_text_from_dict
 
 from datetime import datetime
 
