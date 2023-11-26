@@ -124,11 +124,12 @@ def show_recording(recording_id):
     resume_text = "No resume available"
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
-    # print(associated_resume)
+    print(recording.associated_resume_id)
+    print(associated_resume)
     if associated_resume:
         # Assuming the text content is stored in a file
         try:
-            with open(f"userdata/texts/{associated_resume.text_filename}", "r") as f:
+            with open(f"webserver/userdata/texts/{associated_resume.text_filename}", "r") as f:
                 resume_text = f.read()
         except IOError:
             resume_text = "Error reading resume file. It might not be available yet."
@@ -237,9 +238,11 @@ def show_search():
 def search_results():
     # Get the search query from URL parameters
     query = request.args.get('query', '')
+    # Get the number of results to show from URL parameters
+    num_results = int(request.args.get('n', 3))
 
     # Assuming get_n_closest_ids function returns a list of result IDs
-    result_ids = get_n_closest_ids(1, query, 3)
+    result_ids = get_n_closest_ids(1, query, num_results)
 
     # Fetch the results from the database
     results = Recording.query.filter(Recording.id.in_(result_ids)).all()

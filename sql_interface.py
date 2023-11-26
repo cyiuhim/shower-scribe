@@ -82,12 +82,13 @@ def create_text_from_dict(text_dict):
             text.display_name = text_dict["display_name"]
             text.type = text_dict["type"]
             text.associated_recording_id = text_dict["associated_recording_id"]
+            db.session.add(text)
+            db.session.commit()
             recording = Recording.query.filter_by(id=text_dict["associated_recording_id"]).first()
             if text_dict["type"] == 0 and recording:
                 recording.associated_transcription_id = text.id
             if text_dict["type"] == 1 and recording:
                 recording.associated_resume_id = text.id
-            db.session.add(text)
             db.session.commit()
             return text.id
     except:
