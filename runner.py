@@ -66,6 +66,8 @@ class Conductor():
             if user_settings["resume"] == True:
                 self.worker_pool.apply_async(Conductor.create_llm_worker,
                                             args=(recording_id))
+                
+        print("Shower Scribe is ready to go!")
 
     def listen_for_input(self):
         """
