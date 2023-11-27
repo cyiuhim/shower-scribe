@@ -2,38 +2,41 @@
 
 {% block content %}
 
-<div class="container-sm">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 class="display-4" style="color: #343f71;">Recording Details</h1>
-        <div> 
+<div class="container">
+    <div class="row" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="col-md-6 col-12 order-2" style="color: #343f71;">Recording Details</h1>
+        <div class="col-md-6 col-12 order-4 d-flex justify-content-end"> 
             <a href="{{ url_for('recordings_on_date', date=recording.created_at.strftime('%B %d, %Y')) }}" class="btn btn-secondary">Back to {{ recording.created_at.strftime('%b. %d, %Y')}} Recordings</a>
             <button id="deleteBtn" class="btn btn-danger">Delete Recording</button>
         </div>
-    </div>
+        
+        <p class="text-muted">Insight into Recording #{{ recording.id }}</p>
+        
+        <div class="col order-sm-5 order-3">
 
-    <p class="text-muted">Insight into Recording #{{ recording.id }}</p>
-
-    <div class="card mb-4" style="border-color: #e9d8e4;">
-        <div class="card-body" style="background-color: white;">
-            <h3 class="card-title" style="color: #343f71;">{{ recording.display_name }}</h3>
-            <h6 class="card-subtitle mb-3" style="color: #343f71;">Recorded at: {{ recording.created_at.strftime('%I:%M %p').lstrip('0')}}, {{ recording.created_at.strftime('%b. %d, %Y')}}</h6>
-
-            <div class="audio-player mb-3">
-                <audio controls style="width: 100%; max-width: 300px;">
-                    <source src="{{ url_for('send_recording', path=recording.recording_filename) }}" type="audio/wav">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-            
-            <div>
-            <h5 class="card-text" style="color: #343f71;"><strong>Resume:</strong></h5>
-                <!-- Adjusting the pre tag to show the text in a large, non-scrolling box -->
-                    <pre style="color: #343f71; padding: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; max-height: none;">{{ resume_text }}</pre>
+            <div class="card mb-4" style="border-color: #e9d8e4;">
+                <div class="card-body" style="background-color: white;">
+                    <h3 class="card-title" style="color: #343f71;">{{ recording.display_name }}</h3>
+                    <h6 class="card-subtitle mb-3" style="color: #343f71;">Recorded at: {{ recording.created_at.strftime('%I:%M %p').lstrip('0')}}, {{ recording.created_at.strftime('%b. %d, %Y')}}</h6>
+                    
+                    <div class="audio-player mb-3">
+                        <audio controls style="width: 100%; max-width: 300px;">
+                            <source src="{{ url_for('send_recording', path=recording.recording_filename) }}" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    
+                    <div>
+                        <h5 class="card-text" style="color: #343f71;"><strong>Resume:</strong></h5>
+                        <!-- Adjusting the pre tag to show the text in a large, non-scrolling box -->
+                        <pre style="color: #343f71; padding: 15px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: break-word; max-height: none;">{{ resume_text }}</pre>
+                    </div>
+                    
+                    {%if transcriptionid is not none%}
+                    <a href="{{ url_for('show_text', text_id=transcriptionid) }}" id="viewTranscriptBtn" class="btn" style="background-color: white; color: #343f71; border: 1px solid #343f71;">View Complete Transcript</a>
+                    {% endif %}
                 </div>
-            
-            {%if transcriptionid is not none%}
-                <a href="{{ url_for('show_text', text_id=transcriptionid) }}" id="viewTranscriptBtn" class="btn" style="background-color: white; color: #343f71; border: 1px solid #343f71;">View Complete Transcript</a>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
