@@ -1,7 +1,7 @@
 import assemblyai
 import multiprocessing as mp
 import os
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import sys
 import uuid
 
