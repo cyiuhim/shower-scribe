@@ -20,4 +20,8 @@ if __name__ == "__main__":
     from webserver.app import *
     with app.app_context():
         db.create_all()
+
+    import vector_interface
+    vector_interface.reset_database()
+
     
