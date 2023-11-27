@@ -41,9 +41,9 @@ class Conductor():
         self.worker_pool = mp.get_context("fork").Pool()
         self.BUTTON_PIN = BUTTON_PIN
         self.LED_PIN = LED_PIN
-        # GPIO.setmode(GPIO.BOARD)
-        # GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        # GPIO.setup(self.LED_PIN, GPIO.OUT)
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(self.LED_PIN, GPIO.OUT)
 
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
@@ -77,10 +77,10 @@ class Conductor():
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
-                        # GPIO.output(self.LED_PIN, GPIO.HIGH)
+                        GPIO.output(self.LED_PIN, GPIO.HIGH)
                         self.recorder.start_recording()
                     if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
-                        # GPIO.output(self.LED_PIN, GPIO.LOW)
+                        GPIO.output(self.LED_PIN, GPIO.LOW)
                         self.create_new_recording()
         else:
             if GPIO.input(self.BUTTON_PIN) and not self.recorder.is_recording:
