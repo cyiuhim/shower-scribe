@@ -7,7 +7,6 @@ import uuid
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
-from pynput import keyboard
 from llm_services.cohere_interractions import full_resume_and_title
 from multiprocessing import Process
 from workers.recorder import Recorder
@@ -74,6 +73,7 @@ class Conductor():
 
         """
         if len(sys.argv) > 1 and sys.argv[1] == "test":
+            from pynput import keyboard
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
