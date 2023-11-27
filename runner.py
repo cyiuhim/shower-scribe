@@ -168,6 +168,7 @@ class Conductor():
 
 
 if __name__ == "__main__":
+    print("Starting Shower Scribe")
     conductor = Conductor(11, 18)
     while True:
         try:
