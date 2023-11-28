@@ -1,9 +1,19 @@
+
+
 import assemblyai
 import multiprocessing as mp
 import os
-import RPi.GPIO as GPIO
 import sys
 import uuid
+
+GPIO_ON = True
+
+# if test is in argv then set gpio to false
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    GPIO_ON = False
+
+if GPIO_ON: 
+    import RPi.GPIO as GPIO
 
 from assemblyai import Transcriber
 from dotenv import load_dotenv
@@ -41,9 +51,10 @@ class Conductor():
         self.worker_pool = mp.get_context("fork").Pool()
         self.BUTTON_PIN = BUTTON_PIN
         self.LED_PIN = LED_PIN
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(self.LED_PIN, GPIO.OUT)
+        if GPIO_ON:
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(self.LED_PIN, GPIO.OUT)
 
         self.flask_server = Process(target=startup_webserver)
         self.flask_server.start()
@@ -74,15 +85,13 @@ class Conductor():
         Listen for keyboard input and orchestrate recording/transcription workers.
 
         """
-        if len(sys.argv) > 1 and sys.argv[1] == "test":
+        if not GPIO_ON:
             from pynput import keyboard
             with keyboard.Events() as events:
                 for event in events:
                     if event.key == keyboard.Key.space and not self.recorder.is_recording:
-                        GPIO.output(self.LED_PIN, GPIO.HIGH)
                         self.recorder.start_recording()
                     if event.key == keyboard.Key.shift_l and self.recorder.is_recording:
-                        GPIO.output(self.LED_PIN, GPIO.LOW)
                         self.create_new_recording()
         else:
             if GPIO.input(self.BUTTON_PIN) and not self.recorder.is_recording:
@@ -176,6 +185,7 @@ if __name__ == "__main__":
         try:
             conductor.listen_for_input()
         except KeyboardInterrupt:
-            print("Exiting")
+            print("Exiting...")
             conductor.clean()
+            print("Shower Scribe has exited.")
             exit()
