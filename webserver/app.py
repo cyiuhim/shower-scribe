@@ -242,10 +242,17 @@ def search_results():
     num_results = int(request.args.get('n', 3))
 
     # Assuming get_n_closest_ids function returns a list of result IDs
-    result_ids = get_n_closest_ids(1, query, num_results)
+    text_result_ids = get_n_closest_ids(1, query, num_results)
 
-    # Fetch the results from the database
-    results = Recording.query.filter(Recording.id.in_(result_ids)).all()
+    # associated recordings
+    associated_text_objects = [TextFile.query.get(text_id) for text_id in text_result_ids]
+
+    associated_recording_ids = [text.associated_recording_id for text in associated_text_objects]
+    
+    print(associated_recording_ids)
+
+    # Fetch the results from the database where the ID of the associated resume matches one of the result IDs
+    results = [Recording.query.get(recording_id) for recording_id in associated_recording_ids]
 
     # Render a template with the search results and the original query
     return render_template('search_results.html', query=query, results=results)
