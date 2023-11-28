@@ -124,8 +124,6 @@ def show_recording(recording_id):
     resume_text = "No resume available"
     # Fetch the associated transcript TextFile entry
     associated_resume = TextFile.query.get(recording.associated_resume_id)
-    print(recording.associated_resume_id)
-    print(associated_resume)
     if associated_resume:
         # Assuming the text content is stored in a file
         try:
@@ -242,15 +240,13 @@ def search_results():
     num_results = int(request.args.get('n', 3))
 
     # Assuming get_n_closest_ids function returns a list of result IDs
-    text_result_ids = get_n_closest_ids(1, query, num_results)
+    text_result_ids = get_n_closest_ids(0, query, num_results)
 
     # associated recordings
     associated_text_objects = [TextFile.query.get(text_id) for text_id in text_result_ids]
 
     associated_recording_ids = [text.associated_recording_id for text in associated_text_objects]
     
-    print(associated_recording_ids)
-
     # Fetch the results from the database where the ID of the associated resume matches one of the result IDs
     results = [Recording.query.get(recording_id) for recording_id in associated_recording_ids]
 

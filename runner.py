@@ -22,6 +22,7 @@ from multiprocessing import Process
 from workers.recorder import Recorder
 from sql_interface import *
 from webserver.app import startup_webserver, user_settings
+from vector_interface import add_vector_from_content
 
 from datetime import datetime
 
@@ -44,9 +45,7 @@ class Conductor():
             print("No Cohere API key found. Please set the COHERE_API_KEY environment variable.")
             exit()
         
-        print(os.environ.get("ASSEMBLY_AI_KEY"))
         assemblyai.settings.api_key = os.environ.get("ASSEMBLY_AI_KEY")
-
 
         self.worker_pool = mp.get_context("fork").Pool()
         self.BUTTON_PIN = BUTTON_PIN
@@ -124,7 +123,7 @@ class Conductor():
         return not bool(status)
 
     @staticmethod
-    def create_transcription_worker(audio_file: str, recording_id: int) -> tuple[str | None, int]:
+    def create_transcription_worker(audio_file: str, recording_id: int) -> tuple[str | None, int, str | None]:
         """
         Class method for creating transcriptions.
         """
@@ -134,34 +133,36 @@ class Conductor():
         filename = f"transcription_{uuid.uuid4()}.txt"
 
         if transcript.text:
-            print(transcript.text)
             with open(os.path.join(Conductor.transcriptions_directory, filename), "w") as f:
                 f.write(transcript.text)
-        return filename, recording_id
+        return filename, recording_id, transcript.text
 
     @staticmethod
     def create_llm_worker(recording_id: int):
         full_resume_and_title(recording_id)
 
-    def transcription_callback(self, data: tuple[str | None, int]):
+    def transcription_callback(self, data: tuple[str | None, int, str | None]):
         """
         Transcription callback.
         """
-        filename, recording_id = data
+        filename, recording_id, transcript_text = data
         text_creation_dict = {
             "text_filename": filename,
             "display_name": f"Transcription of {recording_id}",
             "type": 0,
             "associated_recording_id": recording_id
         }
-        print(text_creation_dict)
-
-        print(create_text_from_dict(text_creation_dict))
-        print(update_recording_flag_transcribed(recording_id))
+        print(f"Transcription received for recording {recording_id}")
+        text_id = create_text_from_dict(text_creation_dict)
+        if text_id is None:
+            print("Error creating text")
+            return
+        update_recording_flag_transcribed(recording_id)
+        add_vector_from_content(0, text_id, transcript_text)
         if user_settings["resume"] == True:
             Conductor.create_llm_worker(recording_id)
         else:
-            print("resume disabled")
+            print("Resume disabled")
 
     def transcription_error_callback(self, data):
         """
