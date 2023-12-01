@@ -243,7 +243,12 @@ def search_results():
     text_result_ids = get_n_closest_ids(0, query, num_results)
 
     # associated recordings
-    associated_text_objects = [TextFile.query.get(text_id) for text_id in text_result_ids]
+    associated_text_objects = []
+    for text_id in text_result_ids:
+        try:
+            associated_text_objects.append(TextFile.query.get(text_id))
+        except:
+            print(f"Error getting text file {text_id} for search results")
 
     associated_recording_ids = [text.associated_recording_id for text in associated_text_objects]
     
