@@ -246,7 +246,9 @@ def search_results():
     associated_text_objects = []
     for text_id in text_result_ids:
         try:
-            associated_text_objects.append(TextFile.query.get(text_id))
+            value = TextFile.query.get(text_id)
+            if value:
+                associated_text_objects.append(value)
         except:
             print(f"Error getting text file {text_id} for search results")
 
