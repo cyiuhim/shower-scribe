@@ -167,11 +167,6 @@ webserver/userdata/**/*.wav
 webserver/userdata/**/*.mp3
 webserver/userdata/**/*.txt
 
-# Except for those starting with "example-"
-!webserver/userdata/**/example-*.wav
-!webserver/userdata/**/example-*.mp3
-!webserver/userdata/**/example-*.txt
-
 # Ignore the database
 *.db
 .vscode/settings.json
